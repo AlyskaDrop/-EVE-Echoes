@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weeping Ghosts | Eve Echoes Corporation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+  <div class="scanline-overlay"></div>
+
+  <div class="page-wrap">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="logo" href="index.html">Weeping <span>Ghosts</span></a>
+        <nav class="main-nav">
+          <a href="#about">О корпорации</a>
+          <a href="#divisions">Дивизионы</a>
+          <a href="#members">Пилоты</a>
+          <a href="#contact">Контакт</a>
+        </nav>
+        <div class="auth-nav" id="auth-nav"></div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div>
+        <p class="hero-eyebrow">&#10022; Eve Echoes Corporation &#10022;</p>
+        <h1>Weeping <span>Ghosts</span></h1>
+        <p class="hero-sub">Элитная корпорация нового Эдема. Боевые операции, торговля, промышленность. Вступай&nbsp;— история пишется сейчас.</p>
+        <div class="hero-btns">
+          <a href="register.html" class="btn btn-lg" id="hero-cta">Вступить в корпорацию</a>
+          <a href="#about"        class="btn btn-ghost btn-lg">Узнать больше</a>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- О КОРПОРАЦИИ -->
+    <section class="section" id="about">
+      <p class="section-title">О корпорации</p>
+      <p class="section-desc">
+        Weeping Ghosts — корпорация в Eve Echoes, основанная на командном духе и взаимной поддержке.
+        Мы действуем в системах с низкой безопасностью, исследуем пространство и доминируем на рынке.
+      </p>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-pilots">0</div>
+          <div class="stat-label">Пилотов</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">0.0</div>
+          <div class="stat-label">Безопасность</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">4</div>
+          <div class="stat-label">Дивизиона</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">24/7</div>
+          <div class="stat-label">Операции</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ДИВИЗИОНЫ -->
+    <section class="section" id="divisions">
+      <p class="section-title">Дивизионы</p>
+      <p class="section-desc">Выбери свой путь в рядах Weeping Ghosts.</p>
+      <div class="cards">
+        <div class="card">
+          <span class="card-icon">⚔️</span>
+          <h3>Боевой дивизион</h3>
+          <p>PvP-операции, флоты, захват суверенитета и уничтожение вражеских структур.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🏭</span>
+          <h3>Промышленность</h3>
+          <p>Добыча руды, производство кораблей и модулей, снабжение корпоративного флота.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">📈</span>
+          <h3>Торговля</h3>
+          <p>Оптимальные торговые маршруты, рыночные операции, пополнение казны корпорации.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔭</span>
+          <h3>Разведка</h3>
+          <p>Сканирование сигнатур, стелс-операции, разведка враждебных территорий.</p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- ПИЛОТЫ -->
+    <section class="section" id="members">
+      <p class="section-title">Пилоты корпорации</p>
+      <p class="section-desc" id="members-desc">Зарегистрированные члены Weeping Ghosts.</p>
+      <div class="members-grid" id="members-grid">
+        <p style="color:var(--muted);">
+          Нет зарегистрированных пилотов.
+          <a href="register.html">Вступить первым</a>
+        </p>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- КОНТАКТ -->
+    <section class="section" id="contact">
+      <p class="section-title">Контакт</p>
+      <p class="section-desc">Хочешь вступить или задать вопрос?</p>
+      <div class="cards" style="max-width:600px;">
+        <div class="card">
+          <h3>In-Game</h3>
+          <p>Найди нас по названию «Weeping Ghosts» в поиске корпораций Eve Echoes.</p>
+        </div>
+        <div class="card">
+          <h3>Email</h3>
+          <p><a href="mailto:info@weeping-ghosts.ru">info@weeping-ghosts.ru</a></p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>© 2026 Weeping Ghosts Corporation &nbsp;|&nbsp; Eve Echoes &nbsp;|&nbsp; All rights reserved</p>
+    </footer>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Счётчик пилотов и сетка
+      const pilots = await WG.getAllPilots();
+      document.getElementById('stat-pilots').textContent = pilots.length;
+
+      if (pilots.length > 0) {
+        document.getElementById('members-grid').innerHTML = pilots.map(p => `
+          <div class="member-card">
+            <div class="member-avatar">${p.pilot.charAt(0).toUpperCase()}</div>
+            <div class="member-pilot">${p.pilot}</div>
+            <div class="member-rank">${p.rank}</div>
+            <div class="member-joined">Вступил: ${new Date(p.joined).toLocaleDateString('ru-RU')}</div>
+          </div>
+        `).join('');
+      }
+
+      // CTA кнопка для вошедших
+      const sess = await WG.syncSession();
+      const cta  = document.getElementById('hero-cta');
+      if (sess && cta) {
+        cta.textContent = 'Мой кабинет';
+        cta.href = 'dashboard.html';
+      }
+
+      // Кнопка для очистки данных (DEV)
+      const devBtn = document.createElement('div');
+      devBtn.style.cssText = 'position:fixed;bottom:1rem;left:1rem;z-index:999;';
+      devBtn.innerHTML = `
+        <button id="dev-clear-btn"
+          style="padding:.4rem .8rem;background:rgba(255,215,0,.3);border:1px solid rgba(255,215,0,.5);color:var(--text);border-radius:6px;cursor:pointer;font-size:.7rem;opacity:.5;">
+          🧹 DEV: Очистить
+        </button>
+      `;
+      document.body.appendChild(devBtn);
+
+      const clearBtn = document.getElementById('dev-clear-btn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+          if (!confirm('Очистить все данные для тестирования?')) return;
+          const result = await WG.clearAllData();
+          if (!result.ok) {
+            alert(result.error || 'Недостаточно прав для полной очистки.');
+            return;
+          }
+          location.reload();
+        });
+      }
+    });
+  </script>
+</body>
+</html>

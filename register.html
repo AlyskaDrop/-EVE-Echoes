@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Регистрация | Weeping Ghosts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+  <div class="scanline-overlay"></div>
+
+  <div class="page-wrap">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="logo" href="index.html">Weeping <span>Ghosts</span></a>
+        <div class="auth-nav">
+          <a href="index.html" class="btn btn-ghost btn-sm">Главная</a>
+          <a href="login.html" class="btn btn-sm">Войти</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="auth-page">
+      <div class="auth-panel">
+        <div class="auth-logo">
+          <div class="auth-corp">Weeping Ghosts</div>
+          <div class="auth-sub">Регистрация пилота</div>
+        </div>
+
+        <form id="registerForm" novalidate>
+          <div class="form-row-2">
+            <div class="form-row">
+              <label for="r-login">Логин</label>
+              <input type="text" id="r-login" name="login" required
+                     autocomplete="username" placeholder="your_callsign" />
+            </div>
+            <div class="form-row">
+              <label for="r-pilot">Имя пилота в Eve</label>
+              <input type="text" id="r-pilot" name="pilot" required
+                     placeholder="Pilot Name" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="r-rank">Роль / специализация</label>
+            <select id="r-rank" name="rank">
+              <option value="Recruit">Recruit — Новобранец</option>
+              <option value="Member">Member — Пилот</option>
+              <option value="Officer">Officer — Офицер</option>
+              <option value="Director">Director — Директор</option>
+            </select>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-row">
+              <label for="r-pass">Пароль</label>
+              <input type="password" id="r-pass" name="password" required
+                     autocomplete="new-password" placeholder="••••••••" />
+            </div>
+            <div class="form-row">
+              <label for="r-pass2">Повторите пароль</label>
+              <input type="password" id="r-pass2" name="password2" required
+                     autocomplete="new-password" placeholder="••••••••" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="r-bio">О себе (необязательно)</label>
+            <input type="text" id="r-bio" name="bio"
+                   placeholder="Временная зона, специализация, опыт..." />
+          </div>
+
+          <button class="btn btn-block" type="submit">Зарегистрироваться</button>
+        </form>
+
+        <div class="msg" id="registerMsg"></div>
+
+        <div class="form-footer">
+          Уже зарегистрированы? <a href="login.html">Войти</a>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <p>© 2026 Weeping Ghosts Corporation</p>
+    </footer>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await WG.redirectIfAuth('dashboard.html');
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const msg = document.getElementById('registerMsg');
+
+      if (this.password.value !== this.password2.value) {
+        msg.className = 'msg show error';
+        msg.textContent = 'Пароли не совпадают.';
+        return;
+      }
+
+      const result = await WG.register({
+        login:    this.login.value,
+        pilot:    this.pilot.value,
+        rank:     this.rank.value,
+        password: this.password.value,
+        bio:      this.bio.value
+      });
+
+      msg.className = 'msg show ' + (result.ok ? 'success' : 'error');
+      msg.textContent = result.ok
+        ? 'Регистрация прошла успешно! Перехожу на страницу входа...'
+        : result.error;
+
+      if (result.ok) {
+        this.reset();
+        setTimeout(() => window.location.href = 'login.html', 1200);
+      }
+    });
+  </script>
+</body>
+</html>

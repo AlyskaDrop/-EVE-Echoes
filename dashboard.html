@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабинет пилота | Weeping Ghosts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+  <div class="scanline-overlay"></div>
+
+  <div class="page-wrap">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="logo" href="index.html">Weeping <span>Ghosts</span></a>
+        <nav class="main-nav">
+          <a href="index.html">Главная</a>
+        </nav>
+        <div class="auth-nav" id="auth-nav"></div>
+      </div>
+    </header>
+
+    <div class="section" id="dash">
+      <p class="section-title">Центр управления пилотом</p>
+      <p class="section-desc" id="dash-welcome">Загрузка системы...</p>
+
+      <div class="dash-grid">
+        <!-- ──── БОКОВАЯ ПАНЕЛЬ ──── -->
+        <aside class="dash-sidebar">
+          <!-- Карточка профиля -->
+          <div class="profile-card" id="profile-card">
+            <!-- заполняется JS -->
+          </div>
+
+          <!-- Статистика -->
+          <div class="dash-panel">
+            <h3>📊 Статистика</h3>
+            <div style="font-size:.85rem;color:var(--muted);line-height:1.8;">
+              <div>🟢 Статус: <span style="color:var(--success);">ОНЛАЙН</span></div>
+              <div>⏱ На сайте: <span id="stat-time">0м</span></div>
+              <div>📅 Активен: <span id="stat-days">0</span> дней</div>
+            </div>
+          </div>
+
+          <!-- Быстрые ссылки -->
+          <div class="dash-panel">
+            <h3>⚡ Меню</h3>
+            <button class="btn btn-ghost btn-block" style="margin-bottom:.6rem;" onclick="openTab('profile')">
+              Мой профиль
+            </button>
+            <button class="btn btn-ghost btn-block" style="margin-bottom:.6rem;" onclick="openTab('security')">
+              Безопасность
+            </button>
+            <button class="btn btn-ghost btn-block" style="margin-bottom:.6rem;" onclick="openTab('activity')">
+              Активность
+            </button>
+            <a href="index.html" class="btn btn-ghost btn-block" style="margin-bottom:.6rem;">
+              Корпорация
+            </a>
+            <button class="btn btn-danger btn-block" onclick="WG.logout()">Выход</button>
+          </div>
+        </aside>
+
+        <!-- ──── ОСНОВНОЙ КОНТЕНТ ──── -->
+        <div class="dash-content">
+
+          <!-- TAB: Профиль (по умолчанию) -->
+          <div class="dash-tab" id="tab-profile" style="display:block;">
+            <div class="dash-panel">
+              <h3>✏️ Мой профиль</h3>
+              <form id="editProfileForm" style="display:none;">
+                <div class="form-row">
+                  <label>Имя пилота</label>
+                  <input type="text" id="edit-pilot" required />
+                </div>
+                <div class="form-row">
+                  <label>О себе</label>
+                  <textarea id="edit-bio" rows="3" placeholder="Временная зона, специализация, опыт..."></textarea>
+                </div>
+                <div style="display:flex;gap:.6rem;">
+                  <button class="btn" type="submit">Сохранить</button>
+                  <button class="btn btn-ghost" type="button" onclick="toggleEditProfile()">Отмена</button>
+                </div>
+              </form>
+
+              <div id="profileView" style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <p><strong>Пилот:</strong> <span id="view-pilot"></span></p>
+                  <p><strong>Ранг:</strong> <span id="view-rank"></span></p>
+                  <p><strong>Логин:</strong> <code id="view-login"></code></p>
+                  <p><strong>О себе:</strong> <span id="view-bio" style="color:var(--muted);"></span></p>
+                  <p><strong>Вступил:</strong> <span id="view-joined"></span></p>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="toggleEditProfile()">Редактировать</button>
+              </div>
+            </div>
+
+            <!-- Достижения -->
+            <div class="dash-panel" style="margin-top:1.5rem;">
+              <h3>🏆 Достижения</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1rem;">
+                <div style="background:rgba(0,255,65,.08);border:1px solid rgba(0,255,65,.2);border-radius:8px;padding:1rem;text-align:center;">
+                  <div style="font-size:1.8rem;margin-bottom:.3rem;">🚀</div>
+                  <div style="font-size:.75rem;color:var(--muted);">Первый полет</div>
+                </div>
+                <div style="background:rgba(0,255,65,.08);border:1px solid rgba(0,255,65,.2);border-radius:8px;padding:1rem;text-align:center;">
+                  <div style="font-size:1.8rem;margin-bottom:.3rem;">👥</div>
+                  <div style="font-size:.75rem;color:var(--muted);">Член корпорации</div>
+                </div>
+                <div style="background:rgba(255,215,0,.08);border:1px dashed rgba(255,215,0,.3);border-radius:8px;padding:1rem;text-align:center;opacity:.5;">
+                  <div style="font-size:1.8rem;margin-bottom:.3rem;">⭐</div>
+                  <div style="font-size:.75rem;color:var(--muted);">Офицер</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Безопасность -->
+          <div class="dash-tab" id="tab-security" style="display:none;">
+            <div class="dash-panel">
+              <h3>🔐 Смена пароля</h3>
+              <form id="changePassForm">
+                <div class="form-row">
+                  <label for="cp-old">Старый пароль</label>
+                  <input type="password" id="cp-old" name="oldpass" required />
+                </div>
+                <div class="form-row">
+                  <label for="cp-new">Новый пароль</label>
+                  <input type="password" id="cp-new" name="newpass" required />
+                </div>
+                <div class="form-row">
+                  <label for="cp-new2">Подтверждение</label>
+                  <input type="password" id="cp-new2" name="newpass2" required />
+                </div>
+                <button class="btn" type="submit">Изменить пароль</button>
+              </form>
+              <div class="msg" id="passMsg"></div>
+            </div>
+
+            <div class="dash-panel" style="margin-top:1.5rem;">
+              <h3>🛡️ Активность</h3>
+              <div style="font-size:.9rem;color:var(--muted);line-height:2;">
+                <div>Последний вход: <strong id="last-login" style="color:var(--accent);">Сейчас</strong></div>
+                <div>IP при входе: <code>198.51.100.42</code></div>
+                <div>Браузер: <code>Chrome 120 | Windows 10</code></div>
+                <div>Активные сессии: <strong>1</strong></div>
+              </div>
+            </div>
+
+            <div class="dash-panel" style="margin-top:1.5rem;background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.2);">
+              <h3>🗑️ Опасная зона</h3>
+              <p style="font-size:.85rem;color:var(--muted);margin-bottom:1.5rem;">
+                Удаление аккаунта необратимо. Все ваши данные и верификация будут стёрты.
+              </p>
+              <button class="btn btn-danger" onclick="showDeleteAccountConfirm()">
+                🗑️ Удалить мой аккаунт
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB: Активность -->
+          <div class="dash-tab" id="tab-activity" style="display:none;">
+            <div class="dash-panel">
+              <h3>✅ Статус верификации</h3>
+              <div id="verifyStatus" style="padding:1rem;border-radius:8px;background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.3);margin-bottom:1.5rem;">
+                <!-- заполняется JS -->
+              </div>
+              <form id="verifyForm">
+                <label><strong>📸 Загрузить скриншот профиля Eve Echoes</strong></label>
+                <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+                  Залей скриншот своего профиля из игры для подтверждения личности. 
+                  Админы одобрят заявку в течение 24 часов.
+                </p>
+                <input type="file" id="verify-file" name="screenshot" accept="image/*" required 
+                       style="display:block;margin-bottom:1rem;cursor:pointer;" />
+                <div id="filePreview" style="display:none;margin-bottom:1rem;">
+                  <img id="previewImg" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border);" />
+                </div>
+                <button class="btn" type="submit">Отправить на верификацию</button>
+              </form>
+              <div class="msg" id="verifyMsg"></div>
+            </div>
+
+            <div class="dash-panel" style="margin-top:1.5rem;">
+              <h3>📝 История активности</h3>
+              <div class="activity-log">
+                <div class="activity-item">
+                  <div class="activity-time">Сегодня 18:30</div>
+                  <div class="activity-text">Вход на сайт</div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-time">Сегодня 18:25</div>
+                  <div class="activity-text">Завершение регистрации</div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-time">Вчера 14:15</div>
+                  <div class="activity-text">Создание аккаунта</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Доска корпорации -->
+            <div class="dash-panel" style="margin-top:1.5rem;">
+              <h3>📢 Объявления корпорации</h3>
+              <div class="news-item">
+                <div class="news-date">18.03.2026 | 20:00</div>
+                <div class="news-text">🚀 Вечерний флот каждую пятницу. Новичкам корабли предоставляются!</div>
+              </div>
+              <div class="news-item">
+                <div class="news-date">18.03.2026 | 12:30</div>
+                <div class="news-text">📊 Открыта торговля в системе. Лучшие цены на руду и модули.</div>
+              </div>
+              <div class="news-item">
+                <div class="news-date">17.03.2026 | 19:45</div>
+                <div class="news-text">⚔️ Боевая операция завтра в 21:00. Приглашаются все пилоты.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Таблица пилотов (всегда видна) -->
+          <div class="dash-panel" style="margin-top:2rem;">
+            <h3>👥 Пилоты Weeping Ghosts &nbsp;<span id="pilot-count" style="font-size:.75rem;color:var(--muted);">(0)</span></h3>
+            <table class="pilots-table">
+              <thead>
+                <tr>
+                  <th>Пилот</th>
+                  <th>Ранг</th>
+                  <th>Дата вступления</th>
+                  <th>Верификация</th>
+                </tr>
+              </thead>
+              <tbody id="pilots-tbody">
+                <!-- заполняется JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="dash-panel" id="admin-access-panel" style="display:none;margin-top:2rem;background:rgba(255,215,0,.06);border:1px dashed rgba(255,215,0,.3);">
+            <h3>🔒 Доступ к админ-панели</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Введите пароль админ-панели для доступа к административным разделам.</p>
+            <form id="adminAccessForm" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;max-width:560px;">
+              <input type="password" id="admin-panel-password" placeholder="Пароль админ-панели" required />
+              <button class="btn btn-sm" type="submit">Разблокировать</button>
+            </form>
+            <div class="msg" id="adminAccessMsg"></div>
+          </div>
+
+          <!-- АДМИН-ПАНЕЛЬ: Заявки на верификацию -->
+          <div class="dash-panel" style="margin-top:2rem;" id="admin-verify-panel" style="display:none;background:rgba(0,255,65,.06);border:1px dashed rgba(0,255,65,.3);">
+            <h3>🔐 Админ: Заявки на верификацию</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Скриншоты для утверждения:</p>
+            <div id="verifyQueueContainer" style="display:grid;gap:1rem;">
+              <!-- заполняется JS -->
+            </div>
+          </div>
+
+          <!-- АДМИН-ПАНЕЛЬ: Управление пилотами -->
+          <div class="dash-panel" style="margin-top:2rem;" id="admin-pilots-panel" style="display:none;background:rgba(255,23,68,.06);border:1px dashed rgba(255,23,68,.3);">
+            <h3>⚙️ Админ: Управление пилотами</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Удаление и редактирование аккаунтов:</p>
+            <div id="adminPilotsContainer" style="display:grid;gap:0.8rem;">
+              <!-- заполняется JS -->
+            </div>
+          </div>
+
+          <!-- АДМИН-ПАНЕЛЬ: Офицерский состав -->
+          <div class="dash-panel" id="admin-officer-panel" style="display:none;margin-top:2rem;background:rgba(0,255,65,.06);border:1px dashed rgba(0,255,65,.3);">
+            <h3>🪖 Админ: Офицерский состав</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Назначение и контроль офицеров корпорации:</p>
+            <div id="officerRosterContainer" style="display:grid;gap:0.8rem;">
+              <!-- заполняется JS -->
+            </div>
+          </div>
+
+          <!-- АДМИН-ПАНЕЛЬ: Управление системой -->
+          <div class="dash-panel" style="margin-top:2rem;" id="admin-system-panel" style="display:none;background:rgba(255,215,0,.06);border:1px dashed rgba(255,215,0,.3);">
+            <h3>🔧 Админ: Управление системой</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">⚠️ Будьте осторожны! Данные действия необратимы:</p>
+            <div style="display:flex;flex-wrap:wrap;gap:.8rem;">
+              <button class="btn btn-danger" onclick="adminClearAllVerifications()">
+                🗑️ Стереть все верификации
+              </button>
+              <button class="btn btn-danger" onclick="adminClearAllData()" style="opacity:.7;">
+                🔥 Стереть ВСЕ данные
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <p>© 2026 Weeping Ghosts Corporation &nbsp;|&nbsp; Eve Echoes</p>
+    </footer>
+  </div>
+
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // ──── ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ──── 
+    let currentSession = null;
+    let startTime = Date.now();
+
+    // ──── ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ────
+    function openTab(tabName) {
+      document.querySelectorAll('.dash-tab').forEach(el => el.style.display = 'none');
+      document.getElementById(`tab-${tabName}`).style.display = 'block';
+    }
+
+    // ──── РЕДАКТИРОВАНИЕ ПРОФИЛЯ ────
+    function toggleEditProfile() {
+      const view = document.getElementById('profileView');
+      const form = document.getElementById('editProfileForm');
+      if (form.style.display === 'none') {
+        form.style.display = 'block';
+        view.style.display = 'none';
+      } else {
+        form.style.display = 'none';
+        view.style.display = 'flex';
+      }
+    }
+
+    async function hasAdminAccess(requireDirector = false) {
+      if (!currentSession) return false;
+      const isAdminRole = currentSession.rank === 'Director' || currentSession.rank === 'Officer';
+      if (!isAdminRole) return false;
+      if (requireDirector && currentSession.rank !== 'Director') return false;
+      return WG.isAdminPanelUnlocked(currentSession.login, requireDirector);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const sess = await WG.requireAuth();
+      if (!sess) return;
+      currentSession = sess;
+
+      /* ──── ПРИВЕТСТВИЕ И СТАТУС ──── */
+      document.getElementById('dash-welcome').textContent =
+        `Статус: ОНЛАЙН — Пилот ${sess.pilot} идентифицирован. Система готова.`;
+
+      const initials = sess.pilot
+        .split(' ')
+        .map(w => w[0] || '')
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || sess.pilot[0].toUpperCase();
+
+      /* ──── КАРТОЧКА ПРОФИЛЯ ──── */
+      document.getElementById('profile-card').innerHTML = `
+        <div class="profile-avatar">${initials}</div>
+        <div class="profile-pilot">${sess.pilot}</div>
+        <div class="profile-rank" style="text-align:center;">${sess.rank}</div>
+        <div style="text-align:center;font-size:.75rem;color:var(--accent);margin-top:.5rem;">
+          ${sess.login}
+        </div>
+      `;
+
+      /* ──── ПРОФИЛЬ (вкладка) ──── */
+      document.getElementById('view-pilot').textContent = sess.pilot;
+      document.getElementById('view-rank').textContent = sess.rank;
+      document.getElementById('view-login').textContent = sess.login;
+      document.getElementById('view-bio').textContent = sess.bio || '(не указана)';
+      document.getElementById('view-joined').textContent = new Date(sess.joined).toLocaleDateString('ru-RU');
+
+      document.getElementById('edit-pilot').value = sess.pilot;
+      document.getElementById('edit-bio').value = sess.bio || '';
+
+      document.getElementById('editProfileForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const newPilot = document.getElementById('edit-pilot').value.trim();
+        const newBio = document.getElementById('edit-bio').value.trim();
+        
+        if (newPilot.length < 2) {
+          alert('Имя пилота должно быть минимум 2 символа');
+          return;
+        }
+
+        const result = await WG.updateProfile({ pilot: newPilot, bio: newBio });
+        if (!result.ok) {
+          alert(result.error || 'Не удалось обновить профиль.');
+          return;
+        }
+
+        sess.pilot = result.user?.pilot || newPilot;
+        sess.bio = result.user?.bio || newBio;
+
+        document.getElementById('view-pilot').textContent = sess.pilot;
+        document.getElementById('view-bio').textContent = sess.bio || '(не указана)';
+
+        alert('Профиль обновлён!');
+        toggleEditProfile();
+      });
+
+      /* ──── СМЕНА ПАРОЛЯ ──── */
+      document.getElementById('changePassForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const oldPass = this.oldpass.value;
+        const newPass = this.newpass.value;
+        const newPass2 = this.newpass2.value;
+        const msg = document.getElementById('passMsg');
+
+        if (newPass !== newPass2) {
+          msg.className = 'msg show error';
+          msg.textContent = 'Новые пароли не совпадают.';
+          return;
+        }
+        if (newPass.length < 6) {
+          msg.className = 'msg show error';
+          msg.textContent = 'Пароль должен быть минимум 6 символов.';
+          return;
+        }
+
+        const result = await WG.changePassword({ oldPassword: oldPass, newPassword: newPass });
+        if (result.ok) {
+          msg.className = 'msg show success';
+          msg.textContent = 'Пароль успешно изменён!';
+          this.reset();
+          setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        } else {
+          msg.className = 'msg show error';
+          msg.textContent = result.error || 'Неверный текущий пароль.';
+        }
+      });
+
+      /* ──── СТАТИСТИКА ──── */
+      const joined = new Date(sess.joined);
+      const now = new Date();
+      const daysActive = Math.floor((now - joined) / (1000 * 60 * 60 * 24));
+      document.getElementById('stat-days').textContent = Math.max(0, daysActive);
+
+      setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 60000);
+        document.getElementById('stat-time').textContent = elapsed + 'м';
+      }, 60000);
+
+      /* ──── AUTH NAV ──── */
+      const authNav = document.getElementById('auth-nav');
+      if (authNav) {
+        authNav.innerHTML = `
+          <span class="pilot-badge">
+            <span class="rank-tag">[${sess.rank}]</span>
+            ${sess.pilot}
+          </span>
+          <button class="btn btn-danger btn-sm" onclick="WG.logout()">Выход</button>
+        `;
+      }
+
+      /* ──── ТАБЛИЦА ПИЛОТОВ ──── */
+      const pilots = await WG.getAllPilots();
+      document.getElementById('pilot-count').textContent = `(${pilots.length})`;
+
+      const rankClass = r => ({
+        Director: 'rank-director',
+        Officer:  'rank-officer',
+        Member:   'rank-member',
+        Recruit:  'rank-recruit'
+      }[r] || 'rank-recruit');
+
+      document.getElementById('pilots-tbody').innerHTML = pilots.map(p => {
+        const verifyStatusCode = p.verifyStatus || 'not_submitted';
+        let badge = '';
+        if (p.verified || verifyStatusCode === 'approved') {
+          badge = '<span style="color:var(--success);font-weight:700;">✅ Верифицирован</span>';
+        } else if (verifyStatusCode === 'pending') {
+          badge = '<span style="color:var(--muted);">⏳ На проверке</span>';
+        } else if (verifyStatusCode === 'rejected') {
+          badge = '<span style="color:var(--danger);">❌ Отклонено</span>';
+        } else {
+          badge = '<span style="color:var(--muted);">⭕ Не отправлено</span>';
+        }
+        return `
+          <tr>
+            <td><strong>${p.pilot}</strong></td>
+            <td><span class="rank-badge ${rankClass(p.rank)}">${p.rank}</span></td>
+            <td>${new Date(p.joined).toLocaleDateString('ru-RU')}</td>
+            <td>${badge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      /* ──── ВЕРИФИКАЦИЯ ──── */
+      const verifyStatus = await WG.getVerifyStatus(sess.login);
+      const statusEl = document.getElementById('verifyStatus');
+      
+      if (sess.verified) {
+        statusEl.innerHTML = `
+          <div style="display:flex;gap:1rem;align-items:center;">
+            <div style="font-size:2rem;">✅</div>
+            <div>
+              <p style="margin:0;color:var(--success);font-weight:700;">Верификация одобрена!</p>
+              <p style="margin:0.2rem 0 0;font-size:.85rem;color:var(--muted);">
+                Дата одобрения: ${new Date(sess.verifyDate).toLocaleDateString('ru-RU')}
+              </p>
+            </div>
+          </div>
+        `;
+        document.getElementById('verifyForm').style.display = 'none';
+      } else if (verifyStatus.status === 'pending') {
+        statusEl.innerHTML = `
+          <div style="display:flex;gap:1rem;align-items:center;">
+            <div style="font-size:2rem;">⏳</div>
+            <div>
+              <p style="margin:0;font-weight:700;">Заявка на проверке</p>
+              <p style="margin:0.2rem 0 0;font-size:.85rem;color:var(--muted);">
+                Загружено: ${new Date(verifyStatus.uploadDate).toLocaleDateString('ru-RU')} | 
+                Ожидание одобрения админом
+              </p>
+            </div>
+          </div>
+        `;
+        document.getElementById('verifyForm').style.display = 'none';
+      } else if (verifyStatus.status === 'rejected') {
+        statusEl.innerHTML = `
+          <div style="display:flex;gap:1rem;align-items:center;">
+            <div style="font-size:2rem;">❌</div>
+            <div>
+              <p style="margin:0;color:var(--danger);font-weight:700;">Заявка отклонена</p>
+              <p style="margin:0.2rem 0 0;font-size:.85rem;color:var(--muted);">
+                Отправьте правильный скриншот профиля для повторной проверки.
+              </p>
+            </div>
+          </div>
+        `;
+        document.getElementById('verifyForm').style.display = 'block';
+      }
+
+      /* Форма верификации */
+      const fileInput = document.getElementById('verify-file');
+      if (fileInput) {
+        fileInput.addEventListener('change', function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const preview = document.getElementById('filePreview');
+              const img = document.getElementById('previewImg');
+              img.src = e.target.result;
+              preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+        document.getElementById('verifyForm').addEventListener('submit', function (e) {
+          e.preventDefault();
+          const file = fileInput.files[0];
+          const msg = document.getElementById('verifyMsg');
+
+          if (!file) {
+            msg.className = 'msg show error';
+            msg.textContent = 'Выберите файл скриншота.';
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = async function (e) {
+            const result = await WG.uploadScreenshot(sess.login, e.target.result);
+            if (!result.ok) {
+              msg.className = 'msg show error';
+              msg.textContent = result.error || 'Ошибка загрузки скриншота.';
+              return;
+            }
+
+            msg.className = 'msg show success';
+            msg.textContent = 'Скриншот загружен! Ожидайте проверки от админа.';
+            fileInput.value = '';
+            document.getElementById('filePreview').style.display = 'none';
+
+            setTimeout(() => {
+              location.reload();
+            }, 2000);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      /* ──── АДМИН-ПАНЕЛЬ ──── */
+      if (sess.rank === 'Director' || sess.rank === 'Officer') {
+        const adminAccessPanel = document.getElementById('admin-access-panel');
+        const adminAccessForm = document.getElementById('adminAccessForm');
+        const adminAccessMsg = document.getElementById('adminAccessMsg');
+        const adminPassInput = document.getElementById('admin-panel-password');
+
+        const renderAdminPanels = async () => {
+          const adminPanel = document.getElementById('admin-verify-panel');
+          adminPanel.style.display = 'block';
+          const verifyRequests = (await WG.getAllVerifyRequests()).filter(r => r.status === 'pending');
+          const container = document.getElementById('verifyQueueContainer');
+
+          if (verifyRequests.length === 0) {
+            container.innerHTML = '<p style="color:var(--muted);">Нет новых заявок на верификацию.</p>';
+          } else {
+            container.innerHTML = verifyRequests.map(req => `
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:grid;grid-template-columns:200px 1fr;gap:1.5rem;align-items:start;">
+                <div>
+                  <img src="${req.image}" style="width:100%;border-radius:8px;border:1px solid var(--border);" />
+                </div>
+                <div>
+                  <p><strong>Логин пилота:</strong> <code>${req.login}</code></p>
+                  <p><strong>Дата загрузки:</strong> ${new Date(req.uploadDate).toLocaleString('ru-RU')}</p>
+                  <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
+                    <button class="btn btn-sm" style="background:var(--success);border-color:var(--success);" 
+                      onclick="approveVerification('${req.login}')">✅ Одобрить</button>
+                    <button class="btn btn-sm btn-danger" onclick="rejectVerification('${req.login}')">❌ Отклонить</button>
+                  </div>
+                </div>
+              </div>
+            `).join('');
+          }
+
+          const adminPilotsPanel = document.getElementById('admin-pilots-panel');
+          adminPilotsPanel.style.display = 'block';
+          const adminPilots = await WG.getAllPilots();
+          const adminPilotsContainer = document.getElementById('adminPilotsContainer');
+
+          adminPilotsContainer.innerHTML = adminPilots.map(p => {
+            const verifyStatusCode = p.verifyStatus || 'not_submitted';
+            const verifyBadge = (p.verified || verifyStatusCode === 'approved')
+              ? '✅'
+              : verifyStatusCode === 'pending'
+                ? '⏳'
+                : verifyStatusCode === 'rejected'
+                  ? '❌'
+                  : '⭕';
+            return `
+              <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+                <div style="flex:1;min-width:150px;">
+                  <strong>${p.pilot}</strong> <span style="color:var(--muted);">(${p.rank})</span>
+                  <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem;">${p.login} | ${verifyBadge}</div>
+                </div>
+                <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+                  <button class="btn btn-sm btn-danger" onclick="adminDeleteVerify('${p.login}')">🗑️ Удалить верифик.</button>
+                  <button class="btn btn-sm btn-danger" style="opacity:.9;" onclick="adminDeletePilot('${p.login}')">🗑️ Удалить пилота</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          const officerPanel = document.getElementById('admin-officer-panel');
+          officerPanel.style.display = 'block';
+          const officerRosterContainer = document.getElementById('officerRosterContainer');
+
+          const officerRoster = adminPilots.filter(p => p.rank === 'Director' || p.rank === 'Officer');
+          const rosterHtml = officerRoster.length
+            ? officerRoster.map(p => `
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.85rem;display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;">
+                  <div>
+                    <strong>${p.pilot}</strong>
+                    <span style="color:var(--gold);margin-left:.4rem;">${p.rank}</span>
+                    <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem;">${p.login}</div>
+                  </div>
+                </div>
+              `).join('')
+            : '<p style="color:var(--muted);">Офицерский состав пока пуст.</p>';
+
+          if (sess.rank === 'Director') {
+            const managementHtml = adminPilots
+              .filter(p => p.rank !== 'Director')
+              .map(p => {
+                const actionButton = p.rank === 'Officer'
+                  ? `<button class="btn btn-sm btn-danger" onclick="adminSetOfficerRank('${p.login}', 'Member', 'снять с офицерского состава')">⬇️ Снять офицера</button>`
+                  : `<button class="btn btn-sm" onclick="adminSetOfficerRank('${p.login}', 'Officer', 'назначить в офицерский состав')">⬆️ Назначить офицером</button>`;
+
+                return `
+                  <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.85rem;display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;">
+                    <div>
+                      <strong>${p.pilot}</strong>
+                      <span style="color:var(--muted);margin-left:.4rem;">(${p.rank})</span>
+                      <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem;">${p.login}</div>
+                    </div>
+                    ${actionButton}
+                  </div>
+                `;
+              }).join('');
+
+            officerRosterContainer.innerHTML = `
+              <div style="font-size:.85rem;color:var(--muted);margin-bottom:.2rem;">Текущий состав:</div>
+              ${rosterHtml}
+              <div style="font-size:.85rem;color:var(--muted);margin:1rem 0 .2rem;">Управление составом:</div>
+              ${managementHtml}
+            `;
+          } else {
+            officerRosterContainer.innerHTML = `
+              <div style="font-size:.85rem;color:var(--muted);margin-bottom:.2rem;">Текущий состав:</div>
+              ${rosterHtml}
+              <p style="font-size:.8rem;color:var(--muted);margin-top:.4rem;">Изменение офицерского состава доступно только Director.</p>
+            `;
+          }
+
+          if (sess.rank === 'Director') {
+            const adminSystemPanel = document.getElementById('admin-system-panel');
+            adminSystemPanel.style.display = 'block';
+          }
+        };
+
+        adminAccessPanel.style.display = 'block';
+        if (await WG.isAdminPanelUnlocked(sess.login)) {
+          adminAccessForm.style.display = 'none';
+          adminAccessMsg.className = 'msg show success';
+          adminAccessMsg.textContent = 'Доступ к админ-панели открыт для текущей сессии.';
+          await renderAdminPanels();
+        } else {
+          adminAccessForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const result = await WG.unlockAdminPanel(sess.login, sess.rank, adminPassInput.value);
+            adminAccessMsg.className = 'msg show ' + (result.ok ? 'success' : 'error');
+            adminAccessMsg.textContent = result.ok
+              ? 'Доступ подтверждён. Загружаю админ-панель...'
+              : result.error;
+
+            if (result.ok) {
+              setTimeout(() => location.reload(), 300);
+            }
+          });
+        }
+      }
+    });
+
+    // Глобальные функции для админа
+    window.approveVerification = async function(login) {
+      if (!(await hasAdminAccess())) {
+        alert('Доступ запрещён. Сначала введите пароль админ-панели.');
+        return;
+      }
+      if (confirm(`Одобрить верификацию для ${login}?`)) {
+        const result = await WG.approveVerify(login);
+        if (!result.ok) {
+          alert(result.error || 'Не удалось одобрить верификацию.');
+          return;
+        }
+        alert('Верификация одобрена!');
+        location.reload();
+      }
+    };
+
+    window.rejectVerification = async function(login) {
+      if (!(await hasAdminAccess())) {
+        alert('Доступ запрещён. Сначала введите пароль админ-панели.');
+        return;
+      }
+      if (confirm(`Отклонить верификацию для ${login}?`)) {
+        const result = await WG.rejectVerify(login);
+        if (!result.ok) {
+          alert(result.error || 'Не удалось отклонить верификацию.');
+          return;
+        }
+        alert('Верификация отклонена!');
+        location.reload();
+      }
+    };
+
+    // Удаление аккаунта пилотом
+    window.showDeleteAccountConfirm = async function() {
+      const msg = `⚠️ ВЫ УВЕРЕНЫ?\n\nЭто удалит ваш аккаунт ПОЛНОСТЬЮ.\nДанные действие НЕВОЗМОЖНО отменить!\n\nТипируйте "удалить" для подтверждения:`;
+      const input = prompt(msg);
+      if (input === 'удалить') {
+        const confirm2 = prompt('Введите свой логин для окончательного подтверждения:');
+        if (confirm2 === currentSession.login) {
+          const result = await WG.deleteAccount(currentSession.login);
+          if (!result.ok) {
+            alert(result.error || 'Не удалось удалить аккаунт.');
+            return;
+          }
+          alert('Аккаунт удалён. Редирект на главную...');
+          window.location.href = 'index.html';
+        } else {
+          alert('Логин не совпадает. Отмена.');
+        }
+      }
+    };
+
+    // Удаление пилота админом
+    window.adminDeletePilot = async function(login) {
+      if (!(await hasAdminAccess())) {
+        alert('Доступ запрещён. Сначала введите пароль админ-панели.');
+        return;
+      }
+      if (confirm(`Удалить пилота "${login}" и все его данные?`)) {
+        const result = await WG.deleteAccount(login);
+        if (!result.ok) {
+          alert(result.error || 'Не удалось удалить пилота.');
+          return;
+        }
+        alert('Пилот удалён!');
+        location.reload();
+      }
+    };
+
+    // Удаление верификации пилота
+    window.adminDeleteVerify = async function(login) {
+      if (!(await hasAdminAccess())) {
+        alert('Доступ запрещён. Сначала введите пароль админ-панели.');
+        return;
+      }
+      if (confirm(`Удалить верификацию для "${login}"?`)) {
+        const result = await WG.deleteVerification(login);
+        if (!result.ok) {
+          alert(result.error || 'Не удалось удалить верификацию.');
+          return;
+        }
+        alert('Верификация удалена!');
+        location.reload();
+      }
+    };
+
+    // Управление офицерским составом (только Director)
+    window.adminSetOfficerRank = async function(login, targetRank, actionLabel) {
+      if (!(await hasAdminAccess(true))) {
+        alert('Недостаточно прав. Изменение состава доступно только Director.');
+        return;
+      }
+
+      if (confirm(`Подтвердить действие: ${actionLabel} (${login})?`)) {
+        const result = await WG.setRank(login, targetRank);
+        if (!result.ok) {
+          alert(result.error || 'Не удалось изменить ранг.');
+          return;
+        }
+        alert('Офицерский состав обновлён!');
+        location.reload();
+      }
+    };
+
+    // Стирание всех верификаций (админ)
+    window.adminClearAllVerifications = async function() {
+      if (!(await hasAdminAccess())) {
+        alert('Доступ запрещён. Сначала введите пароль админ-панели.');
+        return;
+      }
+      if (confirm('⚠️ Это удалит ВСЕ скриншоты верификации!\n\nПродолжить?')) {
+        if (confirm('Это необратимо! Введите "да" в следующем окне')) {
+          const check = prompt('Введите "очистить верификации" для подтверждения:');
+          if (check === 'очистить верификации') {
+            const result = await WG.clearAllVerifications();
+            if (!result.ok) {
+              alert(result.error || 'Не удалось очистить верификации.');
+              return;
+            }
+            alert('Все верификации стёрты!');
+            location.reload();
+          } else {
+            alert('Отмена.');
+          }
+        }
+      }
+    };
+
+    // Стирание всех данных (админ)
+    window.adminClearAllData = async function() {
+      if (!(await hasAdminAccess(true))) {
+        alert('Недостаточно прав. Полная очистка доступна только Director после ввода пароля админ-панели.');
+        return;
+      }
+      if (confirm('🔥 ОПАСНО! Это удалит ВСЕ данные сайта!\n\n- Все аккаунты\n- Все верификации\n- Все сессии\n\nПродолжить?')) {
+        if (confirm('ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ!\n\nВся информация будет УДАЛЕНА безвозвратно!')) {
+          const check = prompt('Введите "стереть ВСЕ" для подтверждения:');
+          if (check === 'стереть ВСЕ') {
+            const result = await WG.clearAllData();
+            if (!result.ok) {
+              alert(result.error || 'Не удалось очистить данные.');
+              return;
+            }
+            alert('Все данные очищены. Редирект на главную...');
+            window.location.href = 'index.html';
+          } else {
+            alert('Отмена.');
+          }
+        }
+      }
+    };
+  </script>
+</body>
+</html>
