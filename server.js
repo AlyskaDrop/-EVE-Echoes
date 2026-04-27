@@ -17,6 +17,57 @@ const ADMIN_TOKEN_TTL_MS = Number(process.env.ADMIN_TOKEN_TTL_MS || 2 * 60 * 60 
 const ADMIN_ROLES = new Set(['Director', 'Officer']);
 const ALLOWED_RANKS = new Set(['Recruit', 'Member', 'Officer', 'Director']);
 
+// ---------------------------------------------------------------------------
+// Rate limiting (fixed-window, in-memory)
+// ---------------------------------------------------------------------------
+
+const rateLimitWindows = new Map(); // key -> { count, resetAt }
+
+const RATE_LIMIT_GLOBAL = { max: 200, windowMs: 60 * 1000 };
+const RATE_LIMIT_AUTH   = { max: 10,  windowMs: 15 * 60 * 1000 };
+const RATE_LIMIT_ADMIN_UNLOCK = { max: 5, windowMs: 15 * 60 * 1000 };
+
+const RATE_LIMITED_ENDPOINTS = new Map([
+  ['/api/auth/login',    RATE_LIMIT_AUTH],
+  ['/api/auth/register', RATE_LIMIT_AUTH],
+  ['/api/admin/unlock',  RATE_LIMIT_ADMIN_UNLOCK],
+]);
+
+// Only trust X-Forwarded-For when explicitly running behind a known proxy.
+const TRUST_PROXY = process.env.TRUST_PROXY === '1';
+
+const getClientIp = req => {
+  if (TRUST_PROXY) {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
+};
+
+const checkRateLimit = (ip, endpoint, limit) => {
+  const key = `${ip}:${endpoint}`;
+  const now = Date.now();
+  let entry = rateLimitWindows.get(key);
+  if (!entry || entry.resetAt <= now) {
+    entry = { count: 0, resetAt: now + limit.windowMs };
+    rateLimitWindows.set(key, entry);
+  }
+  if (entry.count >= limit.max) {
+    return { allowed: false, resetAt: entry.resetAt, count: entry.count, max: limit.max };
+  }
+  entry.count += 1;
+  return { allowed: true, resetAt: entry.resetAt, count: entry.count, max: limit.max };
+};
+
+// Periodically clean up expired rate-limit entries to prevent memory growth.
+const rateLimitCleanupInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitWindows.entries()) {
+    if (entry.resetAt <= now) rateLimitWindows.delete(key);
+  }
+}, 5 * 60 * 1000);
+rateLimitCleanupInterval.unref();
+
 const authTokens = new Map();
 const adminTokens = new Map();
 
@@ -276,6 +327,28 @@ const handleApi = async (req, res, pathname) => {
   if (req.method !== 'POST') {
     json(res, 405, { ok: false, error: 'Method Not Allowed' });
     return true;
+  }
+
+  // Rate limiting — checked before parsing the body to reduce load.
+  const clientIp = getClientIp(req);
+
+  const globalResult = checkRateLimit(clientIp, '*', RATE_LIMIT_GLOBAL);
+  if (!globalResult.allowed) {
+    const retryAfterSec = Math.ceil((globalResult.resetAt - Date.now()) / 1000);
+    res.setHeader('Retry-After', String(retryAfterSec));
+    json(res, 429, { ok: false, error: 'Too many requests. Please try again later.' });
+    return true;
+  }
+
+  const endpointLimit = RATE_LIMITED_ENDPOINTS.get(pathname);
+  if (endpointLimit) {
+    const epResult = checkRateLimit(clientIp, pathname, endpointLimit);
+    if (!epResult.allowed) {
+      const retryAfterSec = Math.ceil((epResult.resetAt - Date.now()) / 1000);
+      res.setHeader('Retry-After', String(retryAfterSec));
+      json(res, 429, { ok: false, error: 'Too many requests. Please try again later.' });
+      return true;
+    }
   }
 
   let body = {};

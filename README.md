@@ -349,6 +349,11 @@
 - ✅ Пароли для работы с админ-панелью
 - ✅ TTL для админ-токенов (2 часа по умолчанию)
 - ✅ CORS и валидация входных данных
+- ✅ Rate limiting (защита от DDoS и брутфорса):
+  - Глобально: 200 запросов / мин на IP
+  - Вход и регистрация: 10 запросов / 15 мин на IP
+  - Разблокировка админ-панели: 5 запросов / 15 мин на IP
+  - При превышении — ответ `429 Too Many Requests` с заголовком `Retry-After`
 
 ### Рекомендации для production
 - ❌ **НЕ использовать в production** без:
@@ -356,7 +361,6 @@
   - Хэширования паролей (bcrypt, argon2)
   - Базы данных вместо памяти
   - JWT вместо памяти сессий
-  - Rate limiting
   - CSRF protection
 
 ---
@@ -371,6 +375,9 @@ HOST=0.0.0.0
 ADMIN_PANEL_PASSWORD=WG-OFFICER-2026
 ADMIN_TOKEN_TTL_MS=7200000
 NODE_ENV=development
+# Set to "1" only when running behind a trusted reverse proxy (nginx, etc.)
+# so that X-Forwarded-For is used for real client IP in rate limiting.
+TRUST_PROXY=0
 ```
 
 ---
